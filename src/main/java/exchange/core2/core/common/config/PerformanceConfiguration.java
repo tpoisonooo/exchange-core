@@ -6,6 +6,7 @@ import exchange.core2.core.orderbook.IOrderBook;
 import exchange.core2.core.orderbook.OrderBookDirectImpl;
 import exchange.core2.core.orderbook.OrderBookNaiveImpl;
 import exchange.core2.core.utils.AffinityThreadFactory;
+import com.lmax.disruptor.dsl.ProducerType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -90,6 +91,12 @@ public final class PerformanceConfiguration {
     private final IOrderBook.OrderBookFactory orderBookFactory;
 
     /*
+     * Disruptor producer type.
+     * SINGLE removes getMinimumSequence overhead in single-publisher scenarios.
+     */
+    private final ProducerType producerType;
+
+    /*
      * LZ4 compressor factory for binary commands and reports
      */
     private final Supplier<LZ4Compressor> binaryCommandsLz4CompressorFactory;
@@ -107,6 +114,7 @@ public final class PerformanceConfiguration {
                 ", threadFactory=" + (threadFactory == null ? null : threadFactory.getClass().getSimpleName()) +
                 ", waitStrategy=" + waitStrategy +
                 ", orderBookFactory=" + (orderBookFactory == null ? null : orderBookFactory.getClass().getSimpleName()) +
+                ", producerType=" + producerType +
                 ", binaryCommandsLz4CompressorFactory=" + (binaryCommandsLz4CompressorFactory == null ? null : binaryCommandsLz4CompressorFactory.getClass().getSimpleName()) +
                 '}';
     }
@@ -125,6 +133,7 @@ public final class PerformanceConfiguration {
                 .l2RefreshDepth(8)
                 .threadFactory(Thread::new)
                 .waitStrategy(CoreWaitStrategy.BLOCKING)
+                .producerType(ProducerType.MULTI)
                 .binaryCommandsLz4CompressorFactory(() -> LZ4Factory.fastestInstance().highCompressor())
                 .orderBookFactory(OrderBookNaiveImpl::new);
     }
@@ -141,6 +150,7 @@ public final class PerformanceConfiguration {
                 .l2RefreshDepth(8)
                 .threadFactory(new AffinityThreadFactory(AffinityThreadFactory.ThreadAffinityMode.THREAD_AFFINITY_ENABLE_PER_LOGICAL_CORE))
                 .waitStrategy(CoreWaitStrategy.BUSY_SPIN)
+                .producerType(ProducerType.MULTI)
                 .binaryCommandsLz4CompressorFactory(() -> LZ4Factory.fastestInstance().highCompressor())
                 .orderBookFactory(OrderBookDirectImpl::new);
     }
@@ -157,6 +167,7 @@ public final class PerformanceConfiguration {
                 .l2RefreshDepth(8)
                 .threadFactory(new AffinityThreadFactory(AffinityThreadFactory.ThreadAffinityMode.THREAD_AFFINITY_ENABLE_PER_LOGICAL_CORE))
                 .waitStrategy(CoreWaitStrategy.BUSY_SPIN)
+                .producerType(ProducerType.MULTI)
                 .binaryCommandsLz4CompressorFactory(() -> LZ4Factory.fastestInstance().highCompressor())
                 .orderBookFactory(OrderBookDirectImpl::new);
     }

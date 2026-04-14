@@ -38,11 +38,10 @@ import net.jpountz.lz4.LZ4Compressor;
 import net.openhft.chronicle.bytes.WriteBytesMarshallable;
 import net.openhft.chronicle.wire.Wire;
 import org.agrona.collections.LongLongConsumer;
-import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.LongConsumer;

@@ -19,12 +19,12 @@ import exchange.core2.core.common.MatcherTradeEvent;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.LinkedBlockingQueue;
+import org.jctools.queues.MpmcArrayQueue;
 
 @Slf4j
 public final class SharedPool {
 
-    private final LinkedBlockingQueue<MatcherTradeEvent> eventChainsBuffer;
+    private final MpmcArrayQueue<MatcherTradeEvent> eventChainsBuffer;
 
     @Getter
     private final int chainLength;
@@ -46,7 +46,7 @@ public final class SharedPool {
             throw new IllegalArgumentException("too big poolInitialSize");
         }
 
-        this.eventChainsBuffer = new LinkedBlockingQueue<>(poolMaxSize);
+        this.eventChainsBuffer = new MpmcArrayQueue<>(poolMaxSize);
         this.chainLength = chainLength;
 
         for (int i = 0; i < poolInitialSize; i++) {

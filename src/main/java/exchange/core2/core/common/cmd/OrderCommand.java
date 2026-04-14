@@ -212,4 +212,5 @@ public final class OrderCommand implements IOrder {
     public int stateHash() {
         throw new UnsupportedOperationException("Command does not represents state");
     }
+
 }

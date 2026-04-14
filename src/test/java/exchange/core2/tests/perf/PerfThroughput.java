@@ -15,6 +15,7 @@
  */
 package exchange.core2.tests.perf;
 
+import com.lmax.disruptor.dsl.ProducerType;
 import exchange.core2.core.common.config.InitialStateConfiguration;
 import exchange.core2.core.common.config.PerformanceConfiguration;
 import exchange.core2.core.common.config.SerializationConfiguration;
@@ -70,6 +71,7 @@ public final class PerfThroughput {
                         .matchingEnginesNum(2)
                         .riskEnginesNum(1)
                         .msgsInGroupLimit(4096)
+                        .producerType(ProducerType.SINGLE)
                         .build(),
                 TestDataParameters.builder()
                         .totalTransactionsNumber(3_000_000)
@@ -98,6 +100,7 @@ public final class PerfThroughput {
         ThroughputTestsModule.throughputTestImpl(
                 PerformanceConfiguration.throughputPerformanceBuilder()
                         .matchingEnginesNum(2)
+                        .producerType(ProducerType.SINGLE)
                         .riskEnginesNum(1)
                         .build(),
                 TestDataParameters.mediumBuilder().build(),
