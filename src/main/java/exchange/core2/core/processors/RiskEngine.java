@@ -435,7 +435,7 @@ public final class RiskEngine implements WriteBytesMarshallable {
 
         // futures positions check for this currency
         long freeFuturesMargin = 0L;
-        if (cfgMarginTradingEnabled) {
+        if (cfgMarginTradingEnabled && !userProfile.positions.isEmpty()) {
             for (final SymbolPositionRecord position : userProfile.positions) {
                 if (position.currency == currency) {
                     final int recSymbol = position.symbol;
@@ -534,17 +534,19 @@ public final class RiskEngine implements WriteBytesMarshallable {
         final int symbol = cmd.symbol;
         // calculate free margin for all positions same currency
         long freeMargin = 0L;
-        for (final SymbolPositionRecord positionRecord : userProfile.positions) {
-            final int recSymbol = positionRecord.symbol;
-            if (recSymbol != symbol) {
-                if (positionRecord.currency == spec.quoteCurrency) {
-                    final CoreSymbolSpecification spec2 = symbolSpecificationProvider.getSymbolSpecification(recSymbol);
-                    // add P&L subtract margin
-                    freeMargin += positionRecord.estimateProfit(spec2, lastPriceCache.get(recSymbol));
-                    freeMargin -= positionRecord.calculateRequiredMarginForFutures(spec2);
+        if (!userProfile.positions.isEmpty()) {
+            for (final SymbolPositionRecord positionRecord : userProfile.positions) {
+                final int recSymbol = positionRecord.symbol;
+                if (recSymbol != symbol) {
+                    if (positionRecord.currency == spec.quoteCurrency) {
+                        final CoreSymbolSpecification spec2 = symbolSpecificationProvider.getSymbolSpecification(recSymbol);
+                        // add P&L subtract margin
+                        freeMargin += positionRecord.estimateProfit(spec2, lastPriceCache.get(recSymbol));
+                        freeMargin -= positionRecord.calculateRequiredMarginForFutures(spec2);
+                    }
+                } else {
+                    freeMargin = position.estimateProfit(spec, lastPriceCache.get(spec.symbolId));
                 }
-            } else {
-                freeMargin = position.estimateProfit(spec, lastPriceCache.get(spec.symbolId));
             }
         }
 

@@ -67,10 +67,10 @@ public final class PerfThroughput {
     public void testThroughputPeak() {
         ThroughputTestsModule.throughputTestImpl(
                 PerformanceConfiguration.throughputPerformanceBuilder()
-                        .ringBufferSize(64 * 1024)
+                        .ringBufferSize(128 * 1024)
                         .matchingEnginesNum(2)
                         .riskEnginesNum(1)
-                        .msgsInGroupLimit(4096)
+                        .msgsInGroupLimit(16384)
                         .producerType(ProducerType.SINGLE)
                         .build(),
                 TestDataParameters.builder()
@@ -99,9 +99,11 @@ public final class PerfThroughput {
     public void testThroughputMultiSymbolMedium() {
         ThroughputTestsModule.throughputTestImpl(
                 PerformanceConfiguration.throughputPerformanceBuilder()
+                        .ringBufferSize(128 * 1024)
                         .matchingEnginesNum(2)
                         .producerType(ProducerType.SINGLE)
                         .riskEnginesNum(1)
+                        .msgsInGroupLimit(16384)
                         .build(),
                 TestDataParameters.mediumBuilder().build(),
                 InitialStateConfiguration.CLEAN_TEST,

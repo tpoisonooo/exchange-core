@@ -30,7 +30,7 @@ public final class TwoStepMasterProcessor implements EventProcessor {
     private static final int HALTED = IDLE + 1;
     private static final int RUNNING = HALTED + 1;
 
-    private static final int MASTER_SPIN_LIMIT = 5000;
+    private static final int MASTER_SPIN_LIMIT = 20000;
 
     private final AtomicInteger running = new AtomicInteger(IDLE);
     private final DataProvider<OrderCommand> dataProvider;

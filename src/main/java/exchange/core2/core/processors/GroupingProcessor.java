@@ -34,7 +34,7 @@ public final class GroupingProcessor implements EventProcessor {
     private static final int HALTED = IDLE + 1;
     private static final int RUNNING = HALTED + 1;
 
-    private static final int GROUP_SPIN_LIMIT = 1000;
+    private static final int GROUP_SPIN_LIMIT = 5000;
 
     // TODO move into configuration
     private static final int L2_PUBLISH_INTERVAL_NS = 10_000_000;
