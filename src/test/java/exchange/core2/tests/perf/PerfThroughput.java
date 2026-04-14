@@ -66,10 +66,10 @@ public final class PerfThroughput {
     public void testThroughputPeak() {
         ThroughputTestsModule.throughputTestImpl(
                 PerformanceConfiguration.throughputPerformanceBuilder()
-                        .ringBufferSize(32 * 1024)
-                        .matchingEnginesNum(4)
-                        .riskEnginesNum(2)
-                        .msgsInGroupLimit(1536)
+                        .ringBufferSize(64 * 1024)
+                        .matchingEnginesNum(2)
+                        .riskEnginesNum(1)
+                        .msgsInGroupLimit(4096)
                         .build(),
                 TestDataParameters.builder()
                         .totalTransactionsNumber(3_000_000)
@@ -96,7 +96,10 @@ public final class PerfThroughput {
     @Test
     public void testThroughputMultiSymbolMedium() {
         ThroughputTestsModule.throughputTestImpl(
-                PerformanceConfiguration.throughputPerformanceBuilder().build(),
+                PerformanceConfiguration.throughputPerformanceBuilder()
+                        .matchingEnginesNum(2)
+                        .riskEnginesNum(1)
+                        .build(),
                 TestDataParameters.mediumBuilder().build(),
                 InitialStateConfiguration.CLEAN_TEST,
                 SerializationConfiguration.DEFAULT,
