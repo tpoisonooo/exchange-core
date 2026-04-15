@@ -20,7 +20,6 @@ import exchange.core2.core.common.MatcherEventType;
 import exchange.core2.core.common.MatcherTradeEvent;
 import exchange.core2.core.common.cmd.OrderCommand;
 import exchange.core2.core.utils.SerializationUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.openhft.chronicle.bytes.NativeBytes;
 import net.openhft.chronicle.wire.Wire;
@@ -32,12 +31,21 @@ import java.util.stream.Stream;
 import static exchange.core2.core.ExchangeCore.EVENTS_POOLING;
 
 @Slf4j
-@RequiredArgsConstructor
 public final class OrderBookEventsHelper {
 
-    public static final OrderBookEventsHelper NON_POOLED_EVENTS_HELPER = new OrderBookEventsHelper(MatcherTradeEvent::new);
+    public static final OrderBookEventsHelper NON_POOLED_EVENTS_HELPER = new OrderBookEventsHelper(MatcherTradeEvent::new, false);
 
     private final Supplier<MatcherTradeEvent> eventChainsSupplier;
+    private final boolean pooled;
+
+    public OrderBookEventsHelper(Supplier<MatcherTradeEvent> eventChainsSupplier) {
+        this(eventChainsSupplier, EVENTS_POOLING);
+    }
+
+    public OrderBookEventsHelper(Supplier<MatcherTradeEvent> eventChainsSupplier, boolean pooled) {
+        this.eventChainsSupplier = eventChainsSupplier;
+        this.pooled = pooled;
+    }
 
     private MatcherTradeEvent eventsChainHead;
 
@@ -185,13 +193,26 @@ public final class OrderBookEventsHelper {
 
     private MatcherTradeEvent newMatcherEvent() {
 
-        if (EVENTS_POOLING) {
+        if (pooled) {
             if (eventsChainHead == null) {
                 eventsChainHead = eventChainsSupplier.get();
 //            log.debug("UPDATED HEAD size={}", eventsChainHead == null ? 0 : eventsChainHead.getChainSize());
             }
             final MatcherTradeEvent res = eventsChainHead;
             eventsChainHead = eventsChainHead.nextEvent;
+
+            // clear all fields to avoid stale data from previous pooled use
+            res.eventType = null;
+            res.section = 0;
+            res.activeOrderCompleted = false;
+            res.matchedOrderId = 0;
+            res.matchedOrderUid = 0;
+            res.matchedOrderCompleted = false;
+            res.price = 0;
+            res.size = 0;
+            res.bidderHoldPrice = 0;
+            res.nextEvent = null;
+
             return res;
         } else {
             return new MatcherTradeEvent();
