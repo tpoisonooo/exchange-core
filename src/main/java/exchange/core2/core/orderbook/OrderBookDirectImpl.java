@@ -16,7 +16,6 @@
 package exchange.core2.core.orderbook;
 
 import exchange.core2.collections.art.LongAdaptiveRadixTreeMap;
-import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
 import exchange.core2.collections.objpool.ObjectsPool;
 import exchange.core2.core.common.*;
 import exchange.core2.core.common.cmd.CommandResultCode;
@@ -51,8 +50,9 @@ public final class OrderBookDirectImpl implements IOrderBook {
     private final CoreSymbolSpecification symbolSpec;
 
     // index: orderId -> order
-    // Using hash map instead of ART tree for faster point lookups (get/remove) which dominate the hot path
-    private final LongObjectHashMap<DirectOrder> orderIdIndex;
+    private final LongAdaptiveRadixTreeMap<DirectOrder> orderIdIndex;
+    //private final Long2ObjectHashMap<DirectOrder> orderIdIndex = new Long2ObjectHashMap<>();
+    //private final LongObjectHashMap<DirectOrder> orderIdIndex = new LongObjectHashMap<>();
 
     // heads (nullable)
     private DirectOrder bestAskOrder = null;
@@ -75,7 +75,7 @@ public final class OrderBookDirectImpl implements IOrderBook {
         this.askPriceBuckets = new LongAdaptiveRadixTreeMap<>(objectsPool);
         this.bidPriceBuckets = new LongAdaptiveRadixTreeMap<>(objectsPool);
         this.eventsHelper = eventsHelper;
-        this.orderIdIndex = new LongObjectHashMap<>();
+        this.orderIdIndex = new LongAdaptiveRadixTreeMap<>(objectsPool);
         this.logDebug = loggingCfg.getLoggingLevels().contains(LoggingConfiguration.LoggingLevel.LOGGING_MATCHING_DEBUG);
     }
 
@@ -89,7 +89,7 @@ public final class OrderBookDirectImpl implements IOrderBook {
         this.askPriceBuckets = new LongAdaptiveRadixTreeMap<>(objectsPool);
         this.bidPriceBuckets = new LongAdaptiveRadixTreeMap<>(objectsPool);
         this.eventsHelper = eventsHelper;
-        this.orderIdIndex = new LongObjectHashMap<>();
+        this.orderIdIndex = new LongAdaptiveRadixTreeMap<>(objectsPool);
         this.logDebug = loggingCfg.getLoggingLevels().contains(LoggingConfiguration.LoggingLevel.LOGGING_MATCHING_DEBUG);
 
         final int size = bytes.readInt();
@@ -584,7 +584,7 @@ public final class OrderBookDirectImpl implements IOrderBook {
 
     @Override
     public void validateInternalState() {
-        final Long2ObjectHashMap<DirectOrder> ordersInChain = new Long2ObjectHashMap<>(orderIdIndex.size(), 0.8f);
+        final Long2ObjectHashMap<DirectOrder> ordersInChain = new Long2ObjectHashMap<>(orderIdIndex.size(Integer.MAX_VALUE), 0.8f);
         validateChain(true, ordersInChain);
         validateChain(false, ordersInChain);
 //        log.debug("ordersInChain={}", ordersInChain);
@@ -592,11 +592,11 @@ public final class OrderBookDirectImpl implements IOrderBook {
 
 //        log.debug("orderIdIndex.keySet()={}", orderIdIndex.keySet().toSortedArray());
 //        log.debug("ordersInChain=        {}", ordersInChain.toSortedArray());
-        orderIdIndex.forEachKeyValue((k, v) -> {
+        orderIdIndex.forEach((k, v) -> {
             if (ordersInChain.remove(k) != v) {
                 thrw("chained orders does not contain orderId=" + k);
             }
-        });
+        }, Integer.MAX_VALUE);
 
         if (ordersInChain.size() != 0) {
             thrw("orderIdIndex does not contain each order from chains");
@@ -722,7 +722,7 @@ public final class OrderBookDirectImpl implements IOrderBook {
     @Override
     public List<Order> findUserOrders(long uid) {
         final List<Order> list = new ArrayList<>();
-        orderIdIndex.forEachKeyValue((orderId, order) -> {
+        orderIdIndex.forEach((orderId, order) -> {
             if (order.uid == uid) {
                 list.add(Order.builder()
                         .orderId(orderId)
@@ -735,7 +735,7 @@ public final class OrderBookDirectImpl implements IOrderBook {
                         .timestamp(order.timestamp)
                         .build());
             }
-        });
+        }, Integer.MAX_VALUE);
 
         return list;
     }
@@ -791,7 +791,7 @@ public final class OrderBookDirectImpl implements IOrderBook {
     public void writeMarshallable(BytesOut bytes) {
         bytes.writeByte(getImplementationType().getCode());
         symbolSpec.writeMarshallable(bytes);
-        bytes.writeInt(orderIdIndex.size());
+        bytes.writeInt(orderIdIndex.size(Integer.MAX_VALUE));
         askOrdersStream(true).forEach(order -> order.writeMarshallable(bytes));
         bidOrdersStream(true).forEach(order -> order.writeMarshallable(bytes));
     }
