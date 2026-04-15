@@ -59,6 +59,8 @@ public class ThroughputTestsModule {
 
                                 container.resetExchangeCore();
 
+                                System.gc();
+
                                 return perfMt;
                             })
                             .mapToDouble(x -> x)

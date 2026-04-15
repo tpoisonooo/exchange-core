@@ -66,8 +66,10 @@ public final class PerfThroughput {
     public void testThroughputPeak() {
         ThroughputTestsModule.throughputTestImpl(
                 PerformanceConfiguration.throughputPerformanceBuilder()
+                        .ringBufferSize(64 * 1024)
                         .matchingEnginesNum(2)
                         .riskEnginesNum(1)
+                        .msgsInGroupLimit(4096)
                         .build(),
                 TestDataParameters.builder()
                         .totalTransactionsNumber(3_000_000)
